@@ -23,6 +23,7 @@ const gameOverScreen = document.getElementById('game-over-screen');
 const finalScoreElement = document.getElementById('final-score');
 
 const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
 
 // Arrays
 let bullets = [];
@@ -184,10 +185,29 @@ function startGame() {
     uiBar.classList.remove('hidden');
 
     gameActive = true;
-    
-    // Start Spawning
+    initGame();
+}
+
+// Resets game variables and UI without reloading the page
+function initGame() {
+    score = 0;
+    health = 100;
+    isGameOver = false;
+    gameActive = true; // FIX: Reset gameActive back to true so game loop and inputs work
+    bullets = [];
+    enemies = [];
+
+    scoreElement.textContent = score;
+    healthElement.textContent = health;
+    enemyCountElement.textContent = 0;
+
+    player.x = canvas.width / 2;
+    player.y = canvas.height / 2;
+
     if (spawnIntervalId) clearInterval(spawnIntervalId);
     spawnIntervalId = setInterval(spawnEnemy, 2000);
+
+    gameOverScreen.classList.add('hidden');
 
     gameLoop();
 }
@@ -261,5 +281,6 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Event listener for Start Button only
+// Event Listeners for Buttons
 startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', initGame);
