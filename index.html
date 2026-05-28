@@ -10,10 +10,10 @@
     <div id="game-container">
         <!-- Top UI Bar (Initially Hidden) -->
         <div id="ui-bar" class="hidden">
-            <div>Score: <span id="score">0</span></div>
-            <div>Level: <span id="level-display">1</span></div>
-            <div>Health: <span id="health">100</span>%</div>
-            <div>Enemies Left: <span id="enemy-count">0</span></div>
+            <div class="ui-element">Score: <span id="score">0</span></div>
+            <div class="ui-element" id="level-ui">Level: <span id="level-display">1</span></div>
+            <div class="ui-element">Health: <span id="health">100</span>%</div>
+            <div class="ui-element" id="enemy-ui">Remaining Kills: <span id="enemy-count">0</span></div>
         </div>
 
         <!-- Game Screen -->
@@ -23,24 +23,35 @@
         <div id="start-screen" class="overlay">
             <h1>TOP-DOWN SHOOTER</h1>
             <div class="mode-container">
-                <p>Select Game Mode:</p>
+                <p class="select-title">SELECT GAME MODE</p>
                 <div class="mode-options">
-                    <label>
-                        <input type="radio" name="gameMode" value="levels" checked> Level Mode (4 Levels)
+                    <label class="mode-card">
+                        <input type="radio" name="gameMode" value="levels" checked>
+                        <div class="card-content">
+                            <h3>LEVEL MODE</h3>
+                            <p>4 Stages & Boss Fight</p>
+                        </div>
                     </label>
-                    <label>
-                        <input type="radio" name="gameMode" value="endless"> Endless Mode
+                    <label class="mode-card">
+                        <input type="radio" name="gameMode" value="endless">
+                        <div class="card-content">
+                            <h3>ENDLESS MODE</h3>
+                            <p>Infinite Scaling & Bosses</p>
+                        </div>
                     </label>
                 </div>
             </div>
             <button id="start-btn">START GAME</button>
         </div>
 
-        <!-- Game Over Screen Overlay (Initially Hidden) -->
+        <!-- Game Over / Victory Screen Overlay (Initially Hidden) -->
         <div id="game-over-screen" class="overlay hidden">
             <h1 id="game-over-title" class="over-title">GAME OVER</h1>
             <p id="game-over-text">Your Final Score: <span id="final-score">0</span></p>
-            <button id="restart-btn">RESTART GAME</button>
+            <div class="button-group">
+                <button id="restart-btn" class="btn-action">PLAY AGAIN</button>
+                <button id="menu-btn" class="btn-action btn-secondary">MAIN MENU</button>
+            </div>
         </div>
     </div>
 
