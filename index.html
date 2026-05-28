@@ -22,6 +22,9 @@
         <!-- Start Screen Overlay -->
         <div id="start-screen" class="overlay">
             <h1>TOP-DOWN SHOOTER</h1>
+            <!-- High Score Display on Main Menu -->
+            <p class="high-score-display">All-Time High Score: <span id="start-high-score">0</span></p>
+
             <div class="mode-container">
                 <p class="select-title">SELECT GAME MODE</p>
                 <div class="mode-options">
@@ -48,6 +51,9 @@
         <div id="game-over-screen" class="overlay hidden">
             <h1 id="game-over-title" class="over-title">GAME OVER</h1>
             <p id="game-over-text">Your Final Score: <span id="final-score">0</span></p>
+            <!-- High Score Display on Game Over -->
+            <p class="high-score-display-over">Personal Best: <span id="over-high-score">0</span></p>
+            
             <div class="button-group">
                 <button id="restart-btn" class="btn-action">PLAY AGAIN</button>
                 <button id="menu-btn" class="btn-action btn-secondary">MAIN MENU</button>

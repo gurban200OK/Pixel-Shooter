@@ -14,6 +14,9 @@ let currentLevel = 1;
 let spawnIntervalId = null;
 let bossSpawned = false;
 
+// High Score Persistence Variable
+let highScore = localStorage.getItem('topDownHighScore') || 0;
+
 // Kills tracking for Level Mode progression
 let levelKillsTarget = 10;
 let levelKillsRemaining = 10;
@@ -34,9 +37,16 @@ const gameOverTitle = document.getElementById('game-over-title');
 const gameOverText = document.getElementById('game-over-text');
 const finalScoreElement = document.getElementById('final-score');
 
+// High Score Elements
+const startHighScoreElement = document.getElementById('start-high-score');
+const overHighScoreElement = document.getElementById('over-high-score');
+
 const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const menuBtn = document.getElementById('menu-btn');
+
+// Show initial High Score on main menu startup
+startHighScoreElement.textContent = highScore;
 
 // Arrays
 let bullets = [];
@@ -138,7 +148,7 @@ class Bullet {
     }
 }
 
-// Enemy Class (Includes 3-Way split patterns for heavy shooters)
+// Enemy Class
 class Enemy {
     constructor(x, y, radius, color, speed, maxHealth, type = 'normal') {
         this.x = x;
@@ -178,7 +188,6 @@ class Enemy {
         this.x += Math.cos(angle) * this.speed;
         this.y += Math.sin(angle) * this.speed;
 
-        // Shoot behaviors based on enemy types
         if (!isGameOver) {
             if (this.type === 'shooter') {
                 this.shootCooldown--;
@@ -215,7 +224,7 @@ class Enemy {
     threeWayShoot() {
         const baseAngle = Math.atan2(player.y - this.y, player.x - this.x);
         const bSpeed = 4;
-        const spread = 0.25; // Radial dispersion angle
+        const spread = 0.25;
         const angles = [baseAngle - spread, baseAngle, baseAngle + spread];
 
         angles.forEach(angle => {
@@ -228,7 +237,6 @@ class Enemy {
     }
 
     bossShootPattern() {
-        // Attack Pattern: Circular expansion (8 bullets)
         const numBullets = 8;
         for (let i = 0; i < numBullets; i++) {
             const angle = (Math.PI * 2 / numBullets) * i;
@@ -240,7 +248,6 @@ class Enemy {
             enemyBullets.push(new Bullet(this.x, this.y, 6, '#e67e22', velocity));
         }
 
-        // Concentrated player target burst (3 bullets)
         const baseAngle = Math.atan2(player.y - this.y, player.x - this.x);
         const spread = 0.2;
         const angles = [baseAngle - spread, baseAngle, baseAngle + spread];
@@ -254,10 +261,9 @@ class Enemy {
     }
 }
 
-// Generate enemies based on active Mode difficulty
 function spawnEnemy() {
     if (!gameActive || isGameOver) return;
-    if (gameMode === 'levels' && currentLevel === 4) return; // Only Boss spawns in level 4
+    if (gameMode === 'levels' && currentLevel === 4) return;
 
     let radius = 15;
     let x, y;
@@ -300,21 +306,17 @@ function spawnEnemy() {
             }
         }
     } else {
-        // Endless Mode progressive scaling
         if (score < 100) {
-            // Stage 1
             type = 'normal';
             health = 1;
             color = '#e74c3c';
             speed = 1.5;
         } else if (score >= 100 && score < 200) {
-            // Stage 2: Fast & double HP
             type = 'fast';
             health = 2;
             color = '#e67e22';
             speed = 2.3;
         } else if (score >= 200 && score < 300) {
-            // Stage 3: Purple Shooters
             if (Math.random() < 0.4) {
                 type = 'shooter';
                 health = 2;
@@ -327,10 +329,9 @@ function spawnEnemy() {
                 speed = 2.0;
             }
         } else {
-            // Stage 4: Heavy shooter split shooters (300+ score)
             if (Math.random() < 0.35) {
                 type = 'heavy_shooter';
-                radius = 22; // Larger size
+                radius = 22;
                 health = 4;
                 color = '#2c3e50';
                 speed = 1.0;
@@ -346,7 +347,6 @@ function spawnEnemy() {
     enemies.push(new Enemy(x, y, radius, color, speed, health, type));
 }
 
-// Spawn Level 4 Boss
 function spawnBoss() {
     bossSpawned = true;
     const boss = new Enemy(canvas.width / 2, 80, 45, '#8e44ad', 0.3, 50, 'boss');
@@ -362,7 +362,6 @@ function getDistance(x1, y1, x2, y2) {
 
 const player = new Player(canvas.width / 2, canvas.height / 2, 20, '#3498db', 4);
 
-// Start game action
 function startGame() {
     const selectedRadio = document.querySelector('input[name="gameMode"]:checked');
     gameMode = selectedRadio ? selectedRadio.value : 'levels';
@@ -370,7 +369,6 @@ function startGame() {
     startScreen.classList.add('hidden');
     uiBar.classList.remove('hidden');
 
-    // UI adaptation based on selected Game Mode
     if (gameMode === 'levels') {
         levelUi.classList.remove('hidden');
         enemyUi.classList.remove('hidden');
@@ -383,7 +381,6 @@ function startGame() {
     initGame();
 }
 
-// Initialize session parameters
 function initGame() {
     score = 0;
     health = 100;
@@ -395,7 +392,6 @@ function initGame() {
     enemyBullets = [];
     enemies = [];
 
-    // Reset kill metrics for level 1
     levelKillsTarget = 10;
     levelKillsRemaining = 10;
 
@@ -407,7 +403,6 @@ function initGame() {
         enemyCountElement.textContent = levelKillsRemaining;
     }
 
-    // Reset Overlay Displays
     gameOverTitle.textContent = "GAME OVER";
     gameOverTitle.style.color = "#e74c3c";
     gameOverText.innerHTML = 'Your Final Score: <span id="final-score">0</span>';
@@ -422,19 +417,30 @@ function initGame() {
     gameLoop();
 }
 
-// Return to Main Menu
+// Function to handle persistence check and UI update
+function checkAndSaveHighScore() {
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('topDownHighScore', highScore);
+    }
+    // Update both high score elements on UI
+    overHighScoreElement.textContent = highScore;
+    startHighScoreElement.textContent = highScore;
+}
+
 function showMainMenu() {
     isGameOver = false;
     gameActive = false;
     if (spawnIntervalId) clearInterval(spawnIntervalId);
 
-    // Swap Overlays back to Home
+    // Refresh main menu display
+    startHighScoreElement.textContent = highScore;
+
     gameOverScreen.classList.add('hidden');
     uiBar.classList.add('hidden');
     startScreen.classList.remove('hidden');
 }
 
-// Trigger Victory layout
 function triggerVictory() {
     isGameOver = true;
     gameActive = false;
@@ -443,10 +449,13 @@ function triggerVictory() {
     gameOverTitle.textContent = "VICTORY!";
     gameOverTitle.style.color = "#2ecc71";
     document.getElementById('final-score').textContent = score;
+    
+    // Check and save high score
+    checkAndSaveHighScore();
+    
     gameOverScreen.classList.remove('hidden');
 }
 
-// Trigger Game Over layout
 function triggerGameOver() {
     isGameOver = true;
     gameActive = false;
@@ -455,10 +464,13 @@ function triggerGameOver() {
     gameOverTitle.textContent = "GAME OVER";
     gameOverTitle.style.color = "#e74c3c";
     document.getElementById('final-score').textContent = score;
+
+    // Check and save high score
+    checkAndSaveHighScore();
+
     gameOverScreen.classList.remove('hidden');
 }
 
-// Səviyyə Keçidləri (Kill Targets)
 function handleEnemyKill(enemy) {
     if (enemy.type === 'boss') {
         score += 500;
@@ -474,9 +486,8 @@ function handleEnemyKill(enemy) {
             levelKillsRemaining--;
             
             if (levelKillsRemaining <= 0) {
-                // Səviyyəni artırırıq
                 currentLevel++;
-                enemies = []; // Yeni levelə keçəndə ekranı təmizləyirik
+                enemies = [];
                 
                 if (currentLevel === 2) {
                     levelKillsRemaining = 15;
@@ -485,13 +496,12 @@ function handleEnemyKill(enemy) {
                     levelKillsRemaining = 20;
                     levelDisplay.textContent = '3';
                 } else if (currentLevel === 4) {
-                    levelKillsRemaining = 1; // Boss
+                    levelKillsRemaining = 1;
                     levelDisplay.textContent = '4 (BOSS)';
                     spawnBoss();
                 }
             }
             
-            // UI-ı yeniləyirik
             if (currentLevel < 4) {
                 enemyCountElement.textContent = levelKillsRemaining;
             }
@@ -499,7 +509,6 @@ function handleEnemyKill(enemy) {
     }
 }
 
-// Main Game Loop
 function gameLoop() {
     if (!gameActive || isGameOver) return;
 
@@ -508,7 +517,6 @@ function gameLoop() {
     player.update();
     player.draw();
 
-    // 1. Update Player Bullets
     bullets.forEach((bullet, bIndex) => {
         bullet.update();
         bullet.draw();
@@ -523,12 +531,10 @@ function gameLoop() {
         }
     });
 
-    // 2. Update Enemy Projectiles
     enemyBullets.forEach((eBullet, ebIndex) => {
         eBullet.update();
         eBullet.draw();
 
-        // Contact check: Enemy Projectiles vs Player
         const distToPlayer = getDistance(player.x, player.y, eBullet.x, eBullet.y);
         if (distToPlayer - player.radius - eBullet.radius < 1) {
             health -= 10;
@@ -540,7 +546,6 @@ function gameLoop() {
             }
         }
 
-        // Clear out of bounds bullets
         if (
             eBullet.x + eBullet.radius < 0 ||
             eBullet.x - eBullet.radius > canvas.width ||
@@ -551,12 +556,10 @@ function gameLoop() {
         }
     });
 
-    // 3. Update Enemies
     enemies.forEach((enemy, eIndex) => {
         enemy.update(player.x, player.y);
         enemy.draw();
 
-        // Contact check: Enemy body vs Player body
         const distToPlayer = getDistance(player.x, player.y, enemy.x, enemy.y);
         if (distToPlayer - player.radius - enemy.radius < 1) {
             let damage = enemy.type === 'boss' ? 50 : 20;
@@ -572,18 +575,17 @@ function gameLoop() {
             }
         }
 
-        // Contact check: Player Bullets vs Enemy body
         bullets.forEach((bullet, bIndex) => {
             const distToBullet = getDistance(bullet.x, bullet.y, enemy.x, enemy.y);
             
             if (distToBullet - bullet.radius - enemy.radius < 1) {
                 bullets.splice(bIndex, 1);
-                enemy.health -= 1; // 1 DMG per standard hit
+                enemy.health -= 1;
 
                 if (enemy.health <= 0) {
                     setTimeout(() => {
                         enemies.splice(eIndex, 1);
-                        handleEnemyKill(enemy); // Handle Level progress or score
+                        handleEnemyKill(enemy);
                     }, 0);
                 }
             }
