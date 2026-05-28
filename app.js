@@ -8,29 +8,31 @@ canvas.height = 600;
 let score = 0;
 let health = 100;
 let isGameOver = false;
+let gameActive = false;
+let gameMode = 'levels';
+let spawnIntervalId = null;
 
-// DOM Elements for UI
+// DOM Elements
+const uiBar = document.getElementById('ui-bar');
 const scoreElement = document.getElementById('score');
 const healthElement = document.getElementById('health');
 const enemyCountElement = document.getElementById('enemy-count');
 
-const keys = {
-    w: false,
-    a: false,
-    s: false,
-    d: false
-};
+const startScreen = document.getElementById('start-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
+const finalScoreElement = document.getElementById('final-score');
 
-const mouse = {
-    x: 0,
-    y: 0
-};
+const startBtn = document.getElementById('start-btn');
 
-const bullets = [];
-const enemies = [];
+// Arrays
+let bullets = [];
+let enemies = [];
+
+const keys = { w: false, a: false, s: false, d: false };
+const mouse = { x: 0, y: 0 };
 
 window.addEventListener('keydown', (e) => {
-    if (isGameOver) return; // Stop input if game is over
+    if (!gameActive || isGameOver) return;
     const key = e.key.toLowerCase();
     if (key in keys) keys[key] = true;
 });
@@ -41,15 +43,14 @@ window.addEventListener('keyup', (e) => {
 });
 
 canvas.addEventListener('mousemove', (e) => {
-    if (isGameOver) return;
+    if (!gameActive || isGameOver) return;
     const rect = canvas.getBoundingClientRect();
     mouse.x = e.clientX - rect.left;
     mouse.y = e.clientY - rect.top;
 });
 
-// Shoot a bullet
 window.addEventListener('click', () => {
-    if (isGameOver) return; // Disable shooting on game over
+    if (!gameActive || isGameOver) return;
 
     const angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
     const speed = 8;
@@ -57,7 +58,6 @@ window.addEventListener('click', () => {
         x: Math.cos(angle) * speed,
         y: Math.sin(angle) * speed
     };
-    
     bullets.push(new Bullet(player.x, player.y, 5, '#ffcc00', velocity));
 });
 
@@ -148,9 +148,8 @@ class Enemy {
     }
 }
 
-// Function to spawn enemies
 function spawnEnemy() {
-    if (isGameOver) return; // Stop spawning when game is over
+    if (!gameActive || isGameOver) return;
 
     const radius = 15;
     let x, y;
@@ -165,13 +164,8 @@ function spawnEnemy() {
 
     const speed = 1.5;
     enemies.push(new Enemy(x, y, radius, '#e74c3c', speed));
-    
-    // Update Enemy count UI
     enemyCountElement.textContent = enemies.length;
 }
-
-// Spawn enemy every 2 seconds
-const spawnInterval = setInterval(spawnEnemy, 2000);
 
 function getDistance(x1, y1, x2, y2) {
     const xDist = x2 - x1;
@@ -181,35 +175,42 @@ function getDistance(x1, y1, x2, y2) {
 
 const player = new Player(canvas.width / 2, canvas.height / 2, 20, '#3498db', 4);
 
-// Function to draw Game Over Screen on Canvas
-function drawGameOverScreen() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Function to start the game
+function startGame() {
+    const selectedRadio = document.querySelector('input[name="gameMode"]:checked');
+    gameMode = selectedRadio ? selectedRadio.value : 'levels';
 
-    ctx.font = '40px sans-serif';
-    ctx.fillStyle = '#e74c3c';
-    ctx.textAlign = 'center';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+    startScreen.classList.add('hidden');
+    uiBar.classList.remove('hidden');
 
-    ctx.font = '20px sans-serif';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(`Your Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+    gameActive = true;
+    
+    // Start Spawning
+    if (spawnIntervalId) clearInterval(spawnIntervalId);
+    spawnIntervalId = setInterval(spawnEnemy, 2000);
+
+    gameLoop();
+}
+
+// Trigger Game Over
+function triggerGameOver() {
+    isGameOver = true;
+    gameActive = false;
+    clearInterval(spawnIntervalId);
+
+    finalScoreElement.textContent = score;
+    gameOverScreen.classList.remove('hidden');
 }
 
 // Main Game Loop
 function gameLoop() {
-    if (isGameOver) {
-        drawGameOverScreen();
-        return; // Stop loop
-    }
+    if (!gameActive || isGameOver) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Update and draw Player
     player.update();
     player.draw();
 
-    // Update and draw Bullets
     bullets.forEach((bullet, bIndex) => {
         bullet.update();
         bullet.draw();
@@ -224,28 +225,23 @@ function gameLoop() {
         }
     });
 
-    // Update and draw Enemies
     enemies.forEach((enemy, eIndex) => {
         enemy.update(player.x, player.y);
         enemy.draw();
 
-        // Check collision: Enemy vs Player
         const distToPlayer = getDistance(player.x, player.y, enemy.x, enemy.y);
         if (distToPlayer - player.radius - enemy.radius < 1) {
-            health -= 20; // Reduce health by 20
-            healthElement.textContent = Math.max(0, health); // Update UI
+            health -= 20;
+            healthElement.textContent = Math.max(0, health);
             
-            // Remove the enemy that hit the player immediately
             enemies.splice(eIndex, 1);
             enemyCountElement.textContent = enemies.length;
 
             if (health <= 0) {
-                isGameOver = true;
-                clearInterval(spawnInterval); // Stop enemy spawning process
+                triggerGameOver();
             }
         }
 
-        // Check collision: Bullet vs Enemy
         bullets.forEach((bullet, bIndex) => {
             const distToBullet = getDistance(bullet.x, bullet.y, enemy.x, enemy.y);
             
@@ -254,9 +250,8 @@ function gameLoop() {
                     enemies.splice(eIndex, 1);
                     bullets.splice(bIndex, 1);
                     
-                    // Increment score
                     score += 10;
-                    scoreElement.textContent = score; // Update UI
+                    scoreElement.textContent = score;
                     enemyCountElement.textContent = enemies.length;
                 }, 0);
             }
@@ -266,4 +261,5 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+// Event listener for Start Button only
+startBtn.addEventListener('click', startGame);

@@ -8,8 +8,8 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Top UI Bar -->
-        <div id="ui-bar">
+        <!-- Top UI Bar (Initially Hidden) -->
+        <div id="ui-bar" class="hidden">
             <div>Score: <span id="score">0</span></div>
             <div>Health: <span id="health">100</span>%</div>
             <div>Enemies Left: <span id="enemy-count">0</span></div>
@@ -17,6 +17,30 @@
 
         <!-- Game Screen -->
         <canvas id="gameCanvas"></canvas>
+
+        <!-- Start Screen Overlay -->
+        <div id="start-screen" class="overlay">
+            <h1>TOP-DOWN SHOOTER</h1>
+            <div class="mode-container">
+                <p>Select Game Mode:</p>
+                <div class="mode-options">
+                    <label>
+                        <input type="radio" name="gameMode" value="levels" checked> Level Mode (4 Levels)
+                    </label>
+                    <label>
+                        <input type="radio" name="gameMode" value="endless"> Endless Mode
+                    </label>
+                </div>
+            </div>
+            <button id="start-btn">START GAME</button>
+        </div>
+
+        <!-- Game Over Screen Overlay (Initially Hidden) -->
+        <div id="game-over-screen" class="overlay hidden">
+            <h1 class="over-title">GAME OVER</h1>
+            <p>Your Final Score: <span id="final-score">0</span></p>
+            <button id="restart-btn">RESTART GAME</button>
+        </div>
     </div>
 
     <script src="app.js"></script>

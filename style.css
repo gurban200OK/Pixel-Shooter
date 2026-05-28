@@ -17,6 +17,8 @@ body {
 
 #game-container {
     position: relative;
+    width: 800px;
+    height: 600px;
 }
 
 #ui-bar {
@@ -27,12 +29,92 @@ body {
     display: flex;
     justify-content: space-between;
     font-size: 18px;
-    pointer-events: none; /* Prevents UI from blocking clicks on canvas */
+    pointer-events: none;
     text-shadow: 2px 2px 4px #000;
+    z-index: 5;
 }
 
 canvas {
     background-color: #1a1a1a;
     display: block;
     border: 2px solid #444;
+}
+
+/* Screen Overlays */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 15, 15, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.hidden {
+    display: none !important;
+}
+
+h1 {
+    font-size: 42px;
+    margin-bottom: 20px;
+    color: #3498db;
+    letter-spacing: 2px;
+}
+
+.over-title {
+    color: #e74c3c;
+}
+
+.mode-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.mode-options {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+label {
+    font-size: 16px;
+    cursor: pointer;
+    background: #222;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #444;
+}
+
+label:hover {
+    border-color: #3498db;
+}
+
+button {
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#restart-btn {
+    background-color: #e74c3c;
+}
+
+#restart-btn:hover {
+    background-color: #c0392b;
 }
