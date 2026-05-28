@@ -1,0 +1,38 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #111;
+    color: #fff;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+}
+
+#ui-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    pointer-events: none; /* Prevents UI from blocking clicks on canvas */
+    text-shadow: 2px 2px 4px #000;
+}
+
+canvas {
+    background-color: #1a1a1a;
+    display: block;
+    border: 2px solid #444;
+}
