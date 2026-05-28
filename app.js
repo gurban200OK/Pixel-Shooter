@@ -4,6 +4,16 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
+// Game State Variables
+let score = 0;
+let health = 100;
+let isGameOver = false;
+
+// DOM Elements for UI
+const scoreElement = document.getElementById('score');
+const healthElement = document.getElementById('health');
+const enemyCountElement = document.getElementById('enemy-count');
+
 const keys = {
     w: false,
     a: false,
@@ -16,11 +26,11 @@ const mouse = {
     y: 0
 };
 
-// Arrays to hold active bullets and enemies
 const bullets = [];
 const enemies = [];
 
 window.addEventListener('keydown', (e) => {
+    if (isGameOver) return; // Stop input if game is over
     const key = e.key.toLowerCase();
     if (key in keys) keys[key] = true;
 });
@@ -31,13 +41,16 @@ window.addEventListener('keyup', (e) => {
 });
 
 canvas.addEventListener('mousemove', (e) => {
+    if (isGameOver) return;
     const rect = canvas.getBoundingClientRect();
     mouse.x = e.clientX - rect.left;
     mouse.y = e.clientY - rect.top;
 });
 
-// Shoot a bullet when player clicks
+// Shoot a bullet
 window.addEventListener('click', () => {
+    if (isGameOver) return; // Disable shooting on game over
+
     const angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
     const speed = 8;
     const velocity = {
@@ -45,7 +58,6 @@ window.addEventListener('click', () => {
         y: Math.sin(angle) * speed
     };
     
-    // Spawn bullet at player's position
     bullets.push(new Bullet(player.x, player.y, 5, '#ffcc00', velocity));
 });
 
@@ -130,19 +142,19 @@ class Enemy {
     }
 
     update(targetX, targetY) {
-        // Move towards the player
         const angle = Math.atan2(targetY - this.y, targetX - this.x);
         this.x += Math.cos(angle) * this.speed;
         this.y += Math.sin(angle) * this.speed;
     }
 }
 
-// Function to spawn enemies from outside the screen
+// Function to spawn enemies
 function spawnEnemy() {
+    if (isGameOver) return; // Stop spawning when game is over
+
     const radius = 15;
     let x, y;
 
-    // Decide a random side of the screen to spawn from (Top, Bottom, Left, Right)
     if (Math.random() < 0.5) {
         x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
         y = Math.random() * canvas.height;
@@ -153,12 +165,14 @@ function spawnEnemy() {
 
     const speed = 1.5;
     enemies.push(new Enemy(x, y, radius, '#e74c3c', speed));
+    
+    // Update Enemy count UI
+    enemyCountElement.textContent = enemies.length;
 }
 
-// Spawn an enemy every 2 seconds (2000 milliseconds)
-setInterval(spawnEnemy, 2000);
+// Spawn enemy every 2 seconds
+const spawnInterval = setInterval(spawnEnemy, 2000);
 
-// Helper function to calculate distance between two circle entities
 function getDistance(x1, y1, x2, y2) {
     const xDist = x2 - x1;
     const yDist = y2 - y1;
@@ -167,8 +181,28 @@ function getDistance(x1, y1, x2, y2) {
 
 const player = new Player(canvas.width / 2, canvas.height / 2, 20, '#3498db', 4);
 
+// Function to draw Game Over Screen on Canvas
+function drawGameOverScreen() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = '40px sans-serif';
+    ctx.fillStyle = '#e74c3c';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 20);
+
+    ctx.font = '20px sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`Your Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+}
+
 // Main Game Loop
 function gameLoop() {
+    if (isGameOver) {
+        drawGameOverScreen();
+        return; // Stop loop
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Update and draw Player
@@ -180,7 +214,6 @@ function gameLoop() {
         bullet.update();
         bullet.draw();
 
-        // Remove bullet if it goes off screen to save memory
         if (
             bullet.x + bullet.radius < 0 ||
             bullet.x - bullet.radius > canvas.width ||
@@ -196,22 +229,35 @@ function gameLoop() {
         enemy.update(player.x, player.y);
         enemy.draw();
 
-        // Check collision between Enemy and Player
+        // Check collision: Enemy vs Player
         const distToPlayer = getDistance(player.x, player.y, enemy.x, enemy.y);
         if (distToPlayer - player.radius - enemy.radius < 1) {
-            console.log("Player Hit!"); // Placeholder for game over / lose life logic
+            health -= 20; // Reduce health by 20
+            healthElement.textContent = Math.max(0, health); // Update UI
+            
+            // Remove the enemy that hit the player immediately
+            enemies.splice(eIndex, 1);
+            enemyCountElement.textContent = enemies.length;
+
+            if (health <= 0) {
+                isGameOver = true;
+                clearInterval(spawnInterval); // Stop enemy spawning process
+            }
         }
 
-        // Check collision between Bullets and Enemies
+        // Check collision: Bullet vs Enemy
         bullets.forEach((bullet, bIndex) => {
             const distToBullet = getDistance(bullet.x, bullet.y, enemy.x, enemy.y);
             
-            // If bullet hits enemy, remove both
             if (distToBullet - bullet.radius - enemy.radius < 1) {
-                // Using setTimeout to prevent visual glitching during array splice
                 setTimeout(() => {
                     enemies.splice(eIndex, 1);
                     bullets.splice(bIndex, 1);
+                    
+                    // Increment score
+                    score += 10;
+                    scoreElement.textContent = score; // Update UI
+                    enemyCountElement.textContent = enemies.length;
                 }, 0);
             }
         });
