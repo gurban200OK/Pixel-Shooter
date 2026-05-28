@@ -11,6 +11,7 @@
         <!-- Top UI Bar (Initially Hidden) -->
         <div id="ui-bar" class="hidden">
             <div>Score: <span id="score">0</span></div>
+            <div>Level: <span id="level-display">1</span></div>
             <div>Health: <span id="health">100</span>%</div>
             <div>Enemies Left: <span id="enemy-count">0</span></div>
         </div>
@@ -37,8 +38,8 @@
 
         <!-- Game Over Screen Overlay (Initially Hidden) -->
         <div id="game-over-screen" class="overlay hidden">
-            <h1 class="over-title">GAME OVER</h1>
-            <p>Your Final Score: <span id="final-score">0</span></p>
+            <h1 id="game-over-title" class="over-title">GAME OVER</h1>
+            <p id="game-over-text">Your Final Score: <span id="final-score">0</span></p>
             <button id="restart-btn">RESTART GAME</button>
         </div>
     </div>
