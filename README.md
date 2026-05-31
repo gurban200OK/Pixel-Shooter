@@ -5,6 +5,7 @@ A dynamic, browser-based 2D Top-Down Shooter built using only HTML, CSS, and Van
 ## 🔗 Project Links
 *   **Live Game (GitHub Pages):** [https://gurban200ok.github.io/Pixel-Shooter/]
 *   **AI Development Log:** [AI_DIARY.md](./AI_DIARY.md)
+*    **Trello Board:** [TRELLO](https://trello.com/b/MClFTT73/game)
 
 ---
 
