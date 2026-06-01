@@ -205,7 +205,8 @@ class Enemy {
                 this.shootCooldown--;
                 if (this.shootCooldown <= 0) {
                     this.bossShootPattern();
-                    this.shootCooldown = 90;
+                    // Bossun atəş etmə tezliyi artırıldı (Cooldownd 90-dan 120-ə qaldırıldı)
+                    this.shootCooldown = 120;
                 }
             }
         }
@@ -240,7 +241,8 @@ class Enemy {
         const numBullets = 8;
         for (let i = 0; i < numBullets; i++) {
             const angle = (Math.PI * 2 / numBullets) * i;
-            const bSpeed = 3;
+            // Bossun ətrafına dairəvi atdığı güllələrin sürəti azaldıldı (3-dən 2.5-ə)
+            const bSpeed = 2.5;
             const velocity = {
                 x: Math.cos(angle) * bSpeed,
                 y: Math.sin(angle) * bSpeed
@@ -252,9 +254,10 @@ class Enemy {
         const spread = 0.2;
         const angles = [baseAngle - spread, baseAngle, baseAngle + spread];
         angles.forEach(angle => {
+            // Bossun düz oyunçuya doğru atdığı güllələrin sürəti azaldıldı (5-dən 4-ə)
             const velocity = {
-                x: Math.cos(angle) * 5,
-                y: Math.sin(angle) * 5
+                x: Math.cos(angle) * 4,
+                y: Math.sin(angle) * 4
             };
             enemyBullets.push(new Bullet(this.x, this.y, 5, '#f1c40f', velocity));
         });
@@ -349,7 +352,8 @@ function spawnEnemy() {
 
 function spawnBoss() {
     bossSpawned = true;
-    const boss = new Enemy(canvas.width / 2, 80, 45, '#8e44ad', 0.3, 50, 'boss');
+    // Bossun canı 50-dən 35-ə endirildi ki, daha tez məhv olsun
+    const boss = new Enemy(canvas.width / 2, 80, 45, '#8e44ad', 0.3, 35, 'boss');
     enemies.push(boss);
     enemyCountElement.textContent = "BOSS";
 }
